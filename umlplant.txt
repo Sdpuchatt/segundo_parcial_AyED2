@@ -1,0 +1,90 @@
+@startuml DiagramaDeClasesGestionPedidos
+
+title Diagrama de Clases - Gestión de Pedidos y Artículos
+
+' Clases de Entidades
+class Articulo {
+    - codigo: String
+    - nombre: String
+    - precioUnitario: Double
+    + getCodigo(): String
+    + getNombre(): String
+}
+
+class Proveedor {
+    - cuit: String
+    - razonSocial: String
+    - contacto: String
+    + getCuit(): String
+    + getRazonSocial(): String
+}
+
+class Empleado {
+    - legajo: String
+    - nombre: String
+    - apellido: String
+    + getLegajo(): String
+    + getNombreCompleto(): String
+}
+
+' Clases de Transacciones
+class DetallePedido {
+    - cantidad: Integer
+    - articulo: Articulo
+    + getCantidad(): Integer
+    + calcularSubtotal(): Double
+}
+
+class Pedido {
+    - nroPedido: Integer
+    - fecha: Date
+    - estado: String
+    - proveedor: Proveedor
+    - empleadoSolicitante: Empleado
+    - detalles: List<DetallePedido>
+    + agregarDetalle(articulo: Articulo, cantidad: Integer)
+    + calcularTotal(): Double
+    + mostrarDetalles()
+}
+
+' Clase de Orquestación / Fachada (Aplicación de IOC, Liskov, Open/Closed)
+class SistemaGestion {
+    - articulos: List<Articulo>
+    - proveedores: List<Proveedor>
+    - empleados: List<Empleado>
+    - pedidos: List<Pedido>
+    
+    + cargarArticulo(a: Articulo)
+    + cargarProveedor(p: Proveedor)
+    + cargarEmpleado(e: Empleado)
+    + crearPedido(prov: Proveedor, emp: Empleado): Pedido
+    + mostrarPedidosAProveedores()
+}
+
+' Relaciones
+' -- Articulo
+Articulo "1" -- "N" DetallePedido : es parte de >
+
+' -- Proveedor
+Proveedor "1" <- "N" Pedido : se_solicita_a >
+
+' -- Empleado
+Empleado "1" <- "N" Pedido : solicitado_por >
+
+' -- DetallePedido
+Pedido "1" *-- "N" DetallePedido : contiene >
+
+' -- SistemaGestion (Composición/Agregación)
+SistemaGestion *-- "N" Articulo
+SistemaGestion *-- "N" Proveedor
+SistemaGestion *-- "N" Empleado
+SistemaGestion *-- "N" Pedido
+
+' Notas sobre Principios
+note top of SistemaGestion : Aplica IOC (Inversion of Control)\ncomo punto de inyección de dependencias\n\nAplica Liskov (LSP) y Open/Closed (OCP)\npara orquestar operaciones.
+
+note top of Pedido : Aplica Information Expert (GRASP)\npara calcular el total.
+
+note top of Articulo : Aplica Single Responsibility (SRP) \npara gestionar sus propios datos.
+
+@enduml
